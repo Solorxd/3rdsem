@@ -31,6 +31,6 @@ float rec_pow(float x, int n){
 }
 
 int main(){
-    printf("%f, %f, %f\n", rec_pow(-10, 2), rec_pow(1, 10), rec_pow(10, -5));
-    printf("%f, %f, %f", geom_mean(2, (double)2, (double)18), geom_mean(4, (double)-1, (double)-1, (double)-1, (double)-1), geom_mean(5, (double)10, (double)10, (double)10, (double)10, (double)10));
+    printf("%lf, %lf, %lf\n", rec_pow(-10, 2), rec_pow(1, 10), rec_pow(10, -5));
+    printf("%lf, %lf, %lf\n", geom_mean(2, 2.0, 18.0), geom_mean(4, -1.0, -1.0, -1.0, -1.0), geom_mean(5, 10.0, 10.0, 10.0, 10.0, 10.0));
 }

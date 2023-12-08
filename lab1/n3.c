@@ -104,6 +104,12 @@ int func_t(float eps, float AB, float BC, float AC){
 
 int main(int argc, char **argv){
     char fl;
+
+    if(argc < 2){
+        printf("no key detected\n");
+        return 0;
+    }
+
     if(!opts(argv, &fl)){
         printf("no key detected\n");
     }else{

@@ -48,7 +48,6 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             break;
         }
         
-        printf("%d : ", n);
 
         emp_m[n] = (Employee*)malloc(sizeof(Employee));
         
@@ -68,7 +67,6 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             }
         }while(!sep(c = fgetc(in)));
 
-        printf("id:%u ", emp_m[n]->id);
 
         while(sep(c = fgetc(in)) && c != EOF);
         
@@ -89,7 +87,6 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
         }while(!sep(c = fgetc(in)));
         emp_m[n]->name[i] = '\0';
 
-        printf("name:%s ", emp_m[n]->name);
         
         while(sep(c = fgetc(in)));
         
@@ -108,8 +105,6 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             }
         }while(!sep(c = fgetc(in)));
         emp_m[n]->surname[i] = '\0';
-
-        printf("surname:%s ", emp_m[n]->surname);
         
         while(sep(c = fgetc(in)));
         
@@ -195,8 +190,6 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             free_employee_array(emp_m, n+1);
             return FLOAT_OVERFLOW;
         }
-
-        printf("salary:%lf\n", emp_m[n]->salary);
 
         n++;
 
@@ -315,8 +308,6 @@ int main(int argc, char **argv){
     }else{
         qsort(emp_m, n, sizeof(Employee*), employeecmp_rev);
     }
-
-    printf("xdlol\n");
 
     for(int i = 0; i < n; i++){
         fprintf(out ,"%u %s %s %lf\n", emp_m[i]->id, emp_m[i]->name, emp_m[i]->surname, emp_m[i]->salary);
