@@ -180,7 +180,8 @@ double composition(double n1, double n2){
 
 double tmplim_for_gamma(unsigned long long n){
     double result = 1;
-    for(unsigned long long i = 2; i <= n; i++){
+    if(n >= 2)result *= (2.0 - 1)/2.0;
+    for(unsigned long long i = 3; i <= n; i += 2){
         if(is_prime(i))result *= ((double)i - 1)/(double)i;
     }
     result *= log((double)n);

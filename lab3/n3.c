@@ -68,7 +68,7 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
         }while(!sep(c = fgetc(in)));
 
 
-        while(sep(c = fgetc(in)) && c != EOF);
+        while(sep(c = fgetc(in)));
         
         if(c == EOF){
             free_employee_array(emp_m, n+1);
@@ -206,7 +206,7 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             emp_m = tmpemp;
         }
 
-        while(sep(c) && c != '\n' && c != EOF){
+        while(sep(c)){
             c = fgetc(in);
         }
 
@@ -222,7 +222,7 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
 }
 
 int employeecmp(const void* e1, const void* e2){
-    double eps = 1e-10;
+    double eps = __DBL_EPSILON__;
     Employee *emp1 = *(Employee**)e1, *emp2 = *(Employee**)e2;
     int tmp_res = ((emp1->salary - emp2->salary > eps) - (emp2->salary - emp1->salary > eps));
     if(tmp_res){
