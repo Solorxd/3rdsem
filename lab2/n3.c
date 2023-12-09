@@ -67,7 +67,7 @@ int files_count_str(char* str, int num, ...){
 
 int main(int argc, char **argv){
     if(argc < 3){
-        printf("%s str files...");
+        printf("%s str files...", argv[0]);
         return 0;
     }
     files_count_str(argv[1], 1, argv[2]);
