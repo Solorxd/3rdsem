@@ -70,6 +70,8 @@ int main(int argc, char **argv){
         printf("%s str files...", argv[0]);
         return 0;
     }
-    files_count_str(argv[1], 1, argv[2]);
+    for(int i = 2; i < argc; i++){
+        files_count_str(argv[1], 1, argv[i]);
+    }
     return 1;
 }
