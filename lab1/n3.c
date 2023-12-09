@@ -171,9 +171,9 @@ int main(int argc, char **argv){
                     printf("cant divide by zero\n");
                 }else{
                     if(func_m(n1, n2)){
-                        printf("%d is a multiple of %d", n1, n2);
+                        printf("%ld is a multiple of %ld", n1, n2);
                     }else{
-                        printf("%d is not a multiple of %d", n1, n2);
+                        printf("%ld is not a multiple of %ld", n1, n2);
                     }
                 }
             }else{

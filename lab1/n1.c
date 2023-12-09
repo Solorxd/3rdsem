@@ -119,6 +119,7 @@ int main(int argc, char **argv){
             }else{
                 printf("the number %ld is not prime\n", num);
             }
+            break;
         }
         case 's': {
             if(num < 0){   
