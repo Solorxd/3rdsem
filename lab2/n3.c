@@ -3,17 +3,18 @@
 #include <string.h>
 #include <stdarg.h>
 
-int find_next_str(char *str, FILE *file, int *ind_cur, int *ind_cur_str, int *ind_start_str){
-    int l = strlen(str);
+
+size_t find_next_str(char *str, FILE *file, size_t *ind_cur, size_t *ind_cur_str, size_t *ind_start_str){
+    size_t l = strlen(str);
     char cur_ch;
-    int ind_start = 0;
+    size_t ind_start = 0;
     while((cur_ch = getc(file)) != EOF){
         (*ind_cur)++;
         if(cur_ch == str[0]){
             char fl = 1;
             ind_start = *ind_cur;
-            int tmp_start_str = *ind_cur_str;
-            for(int i = 1; i < l; i++){
+            size_t tmp_start_str = *ind_cur_str;
+            for(size_t i = 1; i < l; i++){
                 cur_ch = getc(file);
                 (*ind_cur)++;
                 if(cur_ch != str[i]){
@@ -40,13 +41,13 @@ int find_next_str(char *str, FILE *file, int *ind_cur, int *ind_cur_str, int *in
     return 0;
 }
 
-int files_count_str(char* str, int num, ...){
+int files_count_str(char* str, size_t num, ...){
     va_list name;
     va_start(name, num);
     FILE *file;
-    int result;
-    int ind_cur, ind_cur_str, result_line;
-    for(int i = 0; i < num; i++){
+    size_t result;
+    size_t ind_cur, ind_cur_str, result_line;
+    for(size_t i = 0; i < num; i++){
         char *name_f = va_arg(name, char*);
         file = fopen(name_f, "r");
         if(!file){
@@ -57,7 +58,7 @@ int files_count_str(char* str, int num, ...){
         ind_cur = 0;
         ind_cur_str = 1;
         while((result = find_next_str(str, file, &ind_cur, &ind_cur_str, &result_line))){
-            printf("\tline = %d : start = %d\n", result_line, result);           
+            printf("\tline = %lld : start = %lld\n", result_line, result);           
         }
         fclose(file);
     }
@@ -70,8 +71,7 @@ int main(int argc, char **argv){
         printf("%s str files...", argv[0]);
         return 0;
     }
-    for(int i = 2; i < argc; i++){
-        files_count_str(argv[1], 1, argv[i]);
-    }
+    
+    files_count_str(argv[1], 2, argv[2], argv[3]);
     return 1;
 }

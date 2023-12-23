@@ -39,13 +39,14 @@ void free_Student_base(Student_base *SB){
     SB->size = 0;
 }
 
-int readempfile(Student_base *SB, FILE* in, int block_size){
+int readempfile(Student_base *SB, FILE* in){
     if(!in){
         return FILE_ERROR;
     }
+    size_t dynamic_size = 1;
 
     SB->size = 0;
-    SB->a = (Student**)malloc(sizeof(Student*) * block_size);
+    SB->a = (Student**)malloc(sizeof(Student*) * dynamic_size);
     if(!SB->a)return BAD_MALLOC;
 
     char c;
@@ -58,7 +59,8 @@ int readempfile(Student_base *SB, FILE* in, int block_size){
         }
         
 
-        SB->a[SB->size] = (Student*)malloc(sizeof(Student));
+        SB->a[SB->size] = (Student*)malloc(sizeof(Student) * dynamic_size);
+        if(!SB->a[SB->size])return BAD_MALLOC;
         
         SB->a[SB->size]->id = 0;
         do{
@@ -163,19 +165,19 @@ int readempfile(Student_base *SB, FILE* in, int block_size){
         }
 
         if(c != '\n' && c != EOF){
-            printf("noway\n");
             free_Student_base(SB);
             return WRONG_DATA_FORMAT;
         }
 
         SB->size++;
 
-        if(SB->size%block_size == 0){
-            if(SIZE_MAX - block_size < SB->size){
+        if(SB->size == dynamic_size){
+            if(SIZE_MAX/2 < SB->size){
                 free_Student_base(SB);
                 return WRONG_DATA_FORMAT;
             }
-            Student** tmpsa = (Student**)realloc(SB->a, SB->size + block_size);
+            dynamic_size *= 2;
+            Student** tmpsa = (Student**)realloc(SB->a, dynamic_size * sizeof(Student*));
             if(!tmpsa){
                 free_Student_base(SB);
                 return BAD_REALLOC;
@@ -226,11 +228,10 @@ double count_average_mark(unsigned char *marks){
 }
 
 int main(int argc, char **argv){
-    FILE *in, *out;
+    FILE *in, *out = NULL;
     switch(argc){
         case 2:{
             in = fopen(argv[1], "r");
-            out = stdout;
             if(!in){
                 printf("file error!\n");
                 return 0;
@@ -251,11 +252,9 @@ int main(int argc, char **argv){
             return 0;
         }
     }
-
-    int block_size = 1;
     Student_base SB;
 
-    result_codes n = readempfile(&SB, in, block_size);
+    result_codes n = readempfile(&SB, in);
 
     switch(n){
         case BAD_MALLOC:{
@@ -326,60 +325,84 @@ int main(int argc, char **argv){
                         printf("input id:");
                         unsigned key;
                         scanf("\n%u", &key);
-                        fprintf(out, "\tSearch results with key id : %u\n", key);
+                        fprintf(stdout, "\tSearch results with key id : %u\n", key);
+                        if(out){
+                            fprintf(out, "\tSearch results with key id : %u\n", key);
+                        }
                         size_t fl = 0;
                         for(size_t i = 0; i < SB.size; i++){
                             if(SB.a[i]->id == key){
-                                fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                fprintf(stdout, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                if(out){
+                                    fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                }
                                 fl++;
                             }
                         }
-                        fprintf(out, "%lld students found\n", fl);
+                        fprintf(stdout, "%lld students found\n", fl);
                         break;
                     }
                     case '2':{
                         printf("input name:");
                         char key[20];
                         scanf("\n%s", key);
-                        fprintf(out, "\tSearch results with key name : %s\n", key);
+                        fprintf(stdout, "\tSearch results with key name : %s\n", key);
+                        if(out){
+                            fprintf(out, "\tSearch results with key name : %s\n", key);
+                        }
                         size_t fl = 0;
                         for(size_t i = 0; i < SB.size; i++){
                             if(!strcmp(SB.a[i]->name, key)){
-                                fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                fprintf(stdout, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                if(out){
+                                    fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                }
                                 fl++;
                             }
                         }
-                        fprintf(out, "%lld students found\n", fl);
+                        fprintf(stdout, "%lld students found\n", fl);
                         break;
                     }
                     case '3':{
                         printf("input surname:");
                         char key[20];
                         scanf("\n%s", key);
-                        fprintf(out, "\tSearch results with key surname : %s\n", key);
+                        fprintf(stdout, "\tSearch results with key surname : %s\n", key);
+                        if(out){
+                            fprintf(out, "\tSearch results with key surname : %s\n", key);
+                        }
                         size_t fl = 0;
                         for(size_t i = 0; i < SB.size; i++){
                             if(!strcmp(SB.a[i]->surname, key)){
-                                fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                fprintf(stdout, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                if(out){
+                                    fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                }
                                 fl++;
                             }
                         }
-                        fprintf(out, "%lld students found\n", fl);
+                        fprintf(stdout, "%lld students found\n", fl);
                         break;
                     }
                     case '4':{
                         printf("input group:");
                         char key[10];
                         scanf("\n%s", key);
-                        fprintf(out, "\tSearch results with key group : %s\n", key);
+                        fprintf(stdout, "\tSearch results with key group : %s\n", key);
+                        if(out){
+                            fprintf(out, "\tSearch results with key group : %s\n", key);
+                        }
                         size_t fl = 0;
                         for(size_t i = 0; i < SB.size; i++){
                             if(!strcmp(SB.a[i]->group, key)){
-                                fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                fprintf(stdout, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                if(out){
+                                    fprintf(out, "%u %s %s %s %s\n", SB.a[i]->id, SB.a[i]->name, SB.a[i]->surname, SB.a[i]->group, SB.a[i]->marks);
+                                }
                                 fl++;
                             }
                         }
-                        fprintf(out, "%lld students found\n", fl);
+                        fprintf(stdout, "%lld students found\n", fl);
                         break;
                     }
                     default:{
@@ -400,22 +423,34 @@ int main(int argc, char **argv){
                 size_t fl = 0;
                 for(size_t i = 0; i < SB.size; i++){
                     if(count_average_mark(SB.a[i]->marks) - average > __DBL_EPSILON__){
-                        fprintf(out, "%s %s\n",SB.a[i]->name, SB.a[i]->surname);
+                        fprintf(stdout, "%s %s\n",SB.a[i]->name, SB.a[i]->surname);
+                        if(out){
+                            fprintf(out, "%s %s\n",SB.a[i]->name, SB.a[i]->surname);
+                        }
                         fl++;
                     }
                 }
-                fprintf(out, "%lld students found\n", fl);
+                fprintf(stdout, "%lld students found\n", fl);
 
                 ans = 0;
                 break;
             }
             case '4':{
-                fprintSB(SB, out);
+                if(out){
+                    fprintSB(SB, out);
+                }else{
+                    fprintf(stdout, "no output file detected\n");
+                }
+                ans = 0;
+                break;
+            }
+            case '5':{
+                fprintSB(SB, stdout);
                 ans = 0;
                 break;
             }
             case 0:{
-                printf("1. Sort\n2. Find\n3. Print student with marks above average\n4. print table\n0. exit\n>");
+                printf("1. Sort\n2. Find\n3. Print student with marks above average\n4. print table in file\n5. print table in console\n0. exit\n>");
                 scanf("\n%c", &ans);
                 break;
             }
@@ -428,7 +463,7 @@ int main(int argc, char **argv){
 
     
     fclose(in);
-    if(out != stdout){
+    if(out){
         fclose(out);
     }
     free_Student_base(&SB);

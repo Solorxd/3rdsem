@@ -4,22 +4,26 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <math.h>
+#include "../args_check.c"
 
-int func_l(char* str){
-    int len = 0;
-    for(int i = 0; str[i] != '\0'; i++){
+size_t func_l(char* str){
+    size_t len = 0;
+    for(size_t i = 0; str[i] != '\0'; i++){
+        if(len == SIZE_MAX){
+            return 0;
+        }
         len++;
     }
     return len;
 }
 
 char* func_r(char *str){
-    int len = func_l(str);
+    size_t len = func_l(str);
     char *str_rev = (char*)malloc((len + 1) * 1);
     if(!str_rev){
         return (char*)NULL;
     }
-    for(int i = 0; i < len; i++){
+    for(size_t i = 0; i < len; i++){
         str_rev[i] = str[len-i-1];
     }
     str_rev[len] = '\0';
@@ -27,12 +31,12 @@ char* func_r(char *str){
 }
 
 char* func_u(char *str){
-    int len = func_l(str);
+    size_t len = func_l(str);
     char *new_str = (char*)malloc((len+1) * 1);
     if(!new_str){
         return (char*)NULL;
     }
-    for(int i = 0; i < len; i++){
+    for(size_t i = 0; i < len; i++){
         if(i%2 == 1){
             new_str[i] = toupper(str[i]);
         }else{
@@ -44,13 +48,13 @@ char* func_u(char *str){
 }
 
 char* func_n(char *str){
-    int len = func_l(str);
+    size_t len = func_l(str);
     char *new_str = (char*)malloc((len + 1) * 1);
     if(!new_str){
         return (char*)NULL;
     }
-    int i_num = 0, i_symb = len-1;
-    for(int i = 0; i < len; i++){
+    size_t i_num = 0, i_symb = len-1;
+    for(size_t i = 0; i < len; i++){
         if(str[i] >= '0' && str[i] <= '9'){
             new_str[i_num] = str[i];
             i_num++;
@@ -60,7 +64,7 @@ char* func_n(char *str){
         }
     }
     char ch_tmp;
-    for(int i = i_num; i < (len - i_num)/2 + i_num; i++){
+    for(size_t i = i_num; i < (len - i_num)/2 + i_num; i++){
         ch_tmp = new_str[i];
         new_str[i] = new_str[len + i_num - i - 1];
         new_str[len + i_num - i - 1] = ch_tmp;
@@ -69,32 +73,36 @@ char* func_n(char *str){
     return new_str;
 }
 
-char* func_c(int num, char **m_str, int seed){
+char* func_c(size_t num, char **m_str, int seed){
     srand(seed);
-    int len = 0;
-    for(int i = 0; i < num; i++){
-        len += func_l(m_str[i]);
+    size_t len = 0;
+    for(size_t i = 0; i < num; i++){
+        size_t tmp = func_l(m_str[i]);
+        if(SIZE_MAX - tmp < len){
+            return (char*)NULL;
+        }
+        len += tmp;
     }
     char *new_str = (char*)malloc((len + 1) * 1);
     if(!new_str){
         return (char*)NULL;
     }
-    int i_new = 0, i_rand, i_len;
-    int rand_m[num];
-    for(int i = 0; i < num; i++){
+    size_t i_new = 0, i_rand, i_len;
+    size_t rand_m[num];
+    for(size_t i = 0; i < num; i++){
         rand_m[i] = i;
     }
-    int tmp_r, tmp_int;
-    for(int i = 0; i < num; i++){
+    size_t tmp_r, tmp_int;
+    for(size_t i = 0; i < num; i++){
         tmp_r = rand()%num;
         tmp_int = rand_m[i];
         rand_m[i] = rand_m[tmp_r];
         rand_m[tmp_r] = tmp_int;
     }
-    for(int i = 0; i < num; i++){
+    for(size_t i = 0; i < num; i++){
         i_rand = rand_m[i];
         i_len = func_l(m_str[i_rand]);
-        for(int j = 0; j < i_len; j++){
+        for(size_t j = 0; j < i_len; j++){
             new_str[i_new] = m_str[i_rand][j];
             i_new++;
         }
@@ -162,12 +170,23 @@ int main(int argc, char **argv){
                 for(int i = 4; i < argc; i++){
                     m_str[i-3] = argv[i];
                 }
-                long long tmp_l = strtoll(argv[3], NULL, 10);
-                if(tmp_l > 4294967295 || tmp_l < 0){
-                    printf("wrong unsigned int value\n");
-                    break;
+                unsigned int seed;
+                switch(mystrtoui(argv[3], &seed)){
+                    case SUCCESS:{
+                        break;
+                    }
+                    case WRONG_FORMAT:{
+                        printf("wrong format\n");
+                        return 0;
+                    }
+                    case UNSIGNED_OVERFLOW:{
+                        printf("unsigned overflow\n");
+                        return 0;
+                    }
+                    default:{
+                        return 0;
+                    }
                 }
-                unsigned int seed = (unsigned int)tmp_l;
                 char *new_str = func_c(argc-3, m_str, seed);
                 printf("%s\n", new_str);
                 free(new_str);

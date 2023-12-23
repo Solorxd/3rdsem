@@ -3,18 +3,16 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-double Polynom(double x, int n, ...){
+double Polynom(double x, size_t n, ...){
     va_list va;
     va_start(va, n);
     if(n == 0){
         double tmp = va_arg(va, double);
         va_end(va);
         return tmp;
-    }else if(n < 0){
-        return 0.0;
     }
     double summ = va_arg(va, double) * x;
-    for(int i = 0; i < n-1; i++){
+    for(size_t i = 0; i < n-1; i++){
         summ += va_arg(va, double);
         summ *= x;
     }

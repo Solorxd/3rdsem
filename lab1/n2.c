@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "../args_check.c"
 
 int is_prime(unsigned long long num){   
     if (num == 2){
@@ -223,9 +224,25 @@ int main(int argc, char **argv){
         printf("%s epsilon\n", argv[0]);
         return 0;
     }
-    double eps = strtof(argv[1], NULL);
+    float eps;
+    switch(mystrtof(argv[1], &eps)){
+        case FLOAT_OVERFLOW:{
+            printf("float overflow\n");
+            return 0;
+        }
+        case WRONG_FORMAT:{
+            printf("wrong format\n");
+            return 0;
+        }
+        case SUCCESS:{
+            break;
+        }
+        default:{
+            return 0;
+        }
+    }
 
-    if(eps <= __DBL_EPSILON__){
+    if(eps <= 0){
         printf("wrong epsilon value");
         return 0;
     }

@@ -13,7 +13,10 @@ int sep(char c){
     return c == ' ' || c == '\t';
 }
 
-int new_func(double eps, double a, double **G, int n, ...){
+int new_func(double eps, double a, double **G, unsigned n, ...){
+    if(eps < 0){
+        return 0;
+    }
     va_list va;
     va_start(va, n);
     double *Gtmp = (double*)malloc( sizeof(double) * (n+1) );
@@ -26,18 +29,21 @@ int new_func(double eps, double a, double **G, int n, ...){
     A[0] = 1;
     factorios[0] = 1;
     a = -a;
-    for(int i = 1; i <= n; i++){
+    for(unsigned i = 1; i <= n; i++){
         factorios[i] = factorios[i-1] * i;
         A[i] = A[i-1] * a;
     }
-    for(int i = n; i >= 0; i--){
+    for(unsigned i = n;; i--){
         Gtmp[n-i] = va_arg(va, double);
         if(isinf(Gtmp[n-i]) || isnan(Gtmp[n-i])){
             free(Gtmp);
             return WRONG_DOUBLE_VALUE;
         }
-        for(int k = i+1; k <= n; k++){
+        for(unsigned k = i+1; k <= n; k++){
             Gtmp[n-i] -= (factorios[k]/(factorios[k-i] * factorios[i]) * A[k-i] * Gtmp[n-k]);
+        }
+        if(i == 0){
+            break;
         }
     }
     *G = Gtmp;

@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include "../args_check.c"
 
-int float_args_check(char **argv, double *eps){
-    *eps = strtof(argv[1], NULL);
-    if(*eps < 0){
-        *eps = fabs(*eps);
-        return -1;
+check_results float_args_check(char **argv, float *eps){
+    check_results r;
+    switch(r = mystrtof(argv[1],eps)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
     }
-    return 1;
+    return SUCCESS;
 }
 
 float f1(float x){
@@ -55,10 +57,22 @@ int main(int argc, char **argv){
         printf("%s epsilon\n", argv[0]);
         return 0;
     }
-    double eps;
-    if(float_args_check(argv, &eps) == -1){
-        printf("eps must be a positive number\n");
-        return 0;
+    float eps;
+    switch(float_args_check(argv, &eps)){
+        case FLOAT_OVERFLOW:{
+            printf("float overflow\n");
+            return 0;
+        }
+        case WRONG_FORMAT:{
+            printf("wrong format\n");
+            return 0;
+        }
+        case SUCCESS:{
+            break;
+        }
+        default:{
+            return 0;
+        }
     }
     
     double s1, s2, s3, s4;

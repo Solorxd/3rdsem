@@ -23,20 +23,21 @@ int sep(char c){
     return c == ' ' || c == '\t';
 }
 
-void free_employee_array(Employee **emp_m, int n){
-    for(int i = 0; i < n; i++){
+void free_employee_array(Employee **emp_m, size_t n){
+    for(size_t i = 0; i < n; i++){
         free(emp_m[i]);
     }
     free(emp_m);
 }
 
-int readempfile(Employee ***emp_res, FILE* in, int block_size){
+result_codes readempfile(Employee ***emp_res, FILE* in, size_t *n){
     if(!in){
         return -1;
     }
-    int n = 0;
+    size_t n_tmp = 0;
+    size_t dynamic_size = 1; 
 
-    Employee **emp_m = (Employee**)malloc(sizeof(Employee*) * block_size);
+    Employee **emp_m = (Employee**)malloc(sizeof(Employee*) * dynamic_size);
     if(!emp_m)return BAD_MALLOC;
 
     char c;
@@ -48,21 +49,25 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             break;
         }
         
-
-        emp_m[n] = (Employee*)malloc(sizeof(Employee));
+        emp_m[n_tmp] = NULL;
+        emp_m[n_tmp] = (Employee*)malloc(sizeof(Employee));
+        if(!emp_m[n_tmp]){
+            free_employee_array(emp_m, n_tmp);
+            return BAD_MALLOC;
+        }
         
-        emp_m[n]->id = 0;
+        emp_m[n_tmp]->id = 0;
         do{
             if(c >= '0' && c <= '9'){
                 c -= '0';
-                if((UINT_MAX - c)/10 < emp_m[n]->id){
-                    free_employee_array(emp_m, n+1);
+                if((UINT_MAX - c)/10 < emp_m[n_tmp]->id){
+                    free_employee_array(emp_m, n_tmp+1);
                     return INT_OVERFLOW;
                 }else{
-                    emp_m[n]->id = emp_m[n]->id*10 + c;
+                    emp_m[n_tmp]->id = emp_m[n_tmp]->id*10 + c;
                 }
             }else{
-                free_employee_array(emp_m, n+1);
+                free_employee_array(emp_m, n_tmp+1);
                 return WRONG_DATA_FORMAT;
             }
         }while(!sep(c = fgetc(in)));
@@ -71,7 +76,7 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
         while(sep(c = fgetc(in)));
         
         if(c == EOF){
-            free_employee_array(emp_m, n+1);
+            free_employee_array(emp_m, n_tmp+1);
             return WRONG_DATA_FORMAT;
         }
 
@@ -79,59 +84,59 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
 
         do{
             if(i < 19 && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))){
-                emp_m[n]->name[i++] = c;
+                emp_m[n_tmp]->name[i++] = c;
             }else{
-                free_employee_array(emp_m, n+1);
+                free_employee_array(emp_m, n_tmp+1);
                 return WRONG_DATA_FORMAT;
             }
         }while(!sep(c = fgetc(in)));
-        emp_m[n]->name[i] = '\0';
+        emp_m[n_tmp]->name[i] = '\0';
 
         
         while(sep(c = fgetc(in)));
         
         if(c == EOF){
-            free_employee_array(emp_m, n+1);
+            free_employee_array(emp_m, n_tmp+1);
             return WRONG_DATA_FORMAT;
         }
 
         i = 0;
         do{
             if(i < 19 && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))){
-                emp_m[n]->surname[i++] = c;
+                emp_m[n_tmp]->surname[i++] = c;
             }else{
-                free_employee_array(emp_m, n+1);
+                free_employee_array(emp_m, n_tmp+1);
                 return WRONG_DATA_FORMAT;
             }
         }while(!sep(c = fgetc(in)));
-        emp_m[n]->surname[i] = '\0';
+        emp_m[n_tmp]->surname[i] = '\0';
         
         while(sep(c = fgetc(in)));
         
         if(c == EOF){
-            free_employee_array(emp_m, n+1);
+            free_employee_array(emp_m, n_tmp+1);
             return WRONG_DATA_FORMAT;
         }
 
         char neg_fl = 0;
         if(c == '-'){
             neg_fl = 1;
-            emp_m[n]->salary = 0;
+            emp_m[n_tmp]->salary = 0;
         }else if(c == '+'){
-            emp_m[n]->salary = 0;
+            emp_m[n_tmp]->salary = 0;
         }else if(c >= '0' && c <= '9'){
-            emp_m[n]->salary = c - '0';
+            emp_m[n_tmp]->salary = c - '0';
         }else{
-           free_employee_array(emp_m, n+1);
+           free_employee_array(emp_m, n_tmp+1);
             return WRONG_DATA_FORMAT; 
         }
 
         while(!sep(c = fgetc(in)) && c != '.' && c != 'e' && c != 'E' && c != '\n'){
             if(c >= '0' && c <= '9'){
-                emp_m[n]->salary = emp_m[n]->salary*10 + c - '0';
+                emp_m[n_tmp]->salary = emp_m[n_tmp]->salary*10 + c - '0';
             }
             else{
-                free_employee_array(emp_m, n+1);
+                free_employee_array(emp_m, n_tmp+1);
                 return WRONG_DATA_FORMAT;
             }
         }
@@ -143,12 +148,12 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
                     tmpdouble = tmpdouble*10 + (c-'0');
                     tmpd *= 0.1;
                 }else{
-                    free_employee_array(emp_m, n+1);
+                    free_employee_array(emp_m, n_tmp+1);
                     return WRONG_DATA_FORMAT;
                 }
                 
             }
-            emp_m[n]->salary += tmpdouble * tmpd;
+            emp_m[n_tmp]->salary += tmpdouble * tmpd;
         }
         
         if(c == 'e' || c == 'E'){
@@ -162,7 +167,7 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
             }else if(c >= '0' && c <= '9'){
                 exp = c -'0';
             }else{
-                free_employee_array(emp_m, n+1);
+                free_employee_array(emp_m, n_tmp+1);
                 return WRONG_DATA_FORMAT;
             }
 
@@ -170,37 +175,38 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
                 if(c >= '0' && c <= '9'){
                     exp = exp*10 + (c - '0');
                     if(exp >= 100){
-                        free_employee_array(emp_m, n+1);
+                        free_employee_array(emp_m, n_tmp+1);
                         return WRONG_DATA_FORMAT;
                     }
                 }else{
-                    free_employee_array(emp_m, n+1);
+                    free_employee_array(emp_m, n_tmp+1);
                     return WRONG_DATA_FORMAT;
                 }
             }
 
             if(neg_fl_e)exp *= -1;
 
-            emp_m[n]->salary *= pow(10, exp);
+            emp_m[n_tmp]->salary *= pow(10, exp);
         }
         
-        if(neg_fl)emp_m[n]->salary *= -1;
+        if(neg_fl)emp_m[n_tmp]->salary *= -1;
 
-        if(isinf(emp_m[n]->salary) || isnan(emp_m[n]->salary)){
-            free_employee_array(emp_m, n+1);
+        if(isinf(emp_m[n_tmp]->salary) || isnan(emp_m[n_tmp]->salary)){
+            free_employee_array(emp_m, n_tmp+1);
             return FLOAT_OVERFLOW;
         }
 
-        n++;
+        n_tmp++;
 
-        if(n%block_size == 0){
-            if(INT_MAX - block_size < n){
-                free_employee_array(emp_m, n);
+        if(n_tmp == dynamic_size){
+            if(SIZE_MAX/2 < dynamic_size){
+                free_employee_array(emp_m, n_tmp);
                 return WRONG_DATA_FORMAT;
             }
-            Employee** tmpemp = (Employee**)realloc(emp_m, n + block_size);
+            dynamic_size *= 2;
+            Employee** tmpemp = (Employee**)realloc(emp_m, dynamic_size * sizeof(Employee*));
             if(!tmpemp){
-                free_employee_array(emp_m, n+1);
+                free_employee_array(emp_m, n_tmp);
                 return BAD_REALLOC;
             }
             emp_m = tmpemp;
@@ -211,14 +217,15 @@ int readempfile(Employee ***emp_res, FILE* in, int block_size){
         }
 
         if(c != '\n' && c != EOF){
-            free_employee_array(emp_m, n);
+            free_employee_array(emp_m, n_tmp);
             return WRONG_DATA_FORMAT;
         }
 
     }while(c != EOF);
-    
+
     *emp_res = emp_m;
-    return n;
+    *n = n_tmp;
+    return OK;
 }
 
 int employeecmp(const void* e1, const void* e2){
@@ -271,12 +278,11 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    int block_size = 20;
     Employee **emp_m;
 
-    int n = readempfile(&emp_m, in, block_size);
+    size_t n;
 
-    switch(n){
+    switch(readempfile(&emp_m, in, &n)){
         case BAD_MALLOC:{
             printf("Bad malloc\n");
             return 0;
@@ -297,11 +303,15 @@ int main(int argc, char **argv){
             printf("Float overflow\n");
             return 0;
         }
-        default:{
-            printf("success! %d lines red\n", n);
+        case OK:{
+            printf("success! %lld lines red\n", n);
             break;
         }
+        default:{
+            return 0;
+        }
     }
+
 
     if(sortfl){
         qsort(emp_m, n, sizeof(Employee*), employeecmp);
@@ -309,7 +319,7 @@ int main(int argc, char **argv){
         qsort(emp_m, n, sizeof(Employee*), employeecmp_rev);
     }
 
-    for(int i = 0; i < n; i++){
+    for(size_t i = 0; i < n; i++){
         fprintf(out ,"%u %s %s %lf\n", emp_m[i]->id, emp_m[i]->name, emp_m[i]->surname, emp_m[i]->salary);
         printf("%u %s %s %lf\n", emp_m[i]->id, emp_m[i]->name, emp_m[i]->surname, emp_m[i]->salary);
         free(emp_m[i]);

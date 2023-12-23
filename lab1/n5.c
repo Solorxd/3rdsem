@@ -1,20 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <limits.h>
+#include "../args_check.c"
 
-int float_args_check(char **argv, float *eps, float *x){
-    *eps = strtof(argv[1], NULL);
-    *x = strtof(argv[2], NULL);
-    if(fabs(*eps) == HUGE_VALF || fabs(*x) == HUGE_VALF || isnan(*x) || isnan(*eps)){
-        return 0;
+check_results float_args_check(char **argv, float *eps, float *x){
+    check_results r;
+    switch(r = mystrtof(argv[1],eps)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
     }
-    if(*eps < 0){
-        *eps = fabs(*eps);
-        return 2;
+    switch(r = mystrtof(argv[2],x)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
     }
-    return 1;
+    return SUCCESS;
 }
 
 int main(int argc, char **argv){
@@ -24,15 +27,28 @@ int main(int argc, char **argv){
         return 0;
     }
     switch(float_args_check(argv, &eps, &x)){
-    case 0:{
-        printf("float overflow\n");
-        return 0;
+        case FLOAT_OVERFLOW:{
+            printf("float overflow\n");
+            return 0;
         }
-    case 2:{
-        printf("eps must be a positive number\nprogramm will continue with absolute value of eps\n");
-        break;
+        case WRONG_FORMAT:{
+            printf("wrong format\n");
+            return 0;
+        }
+        case SUCCESS:{
+            break;
+        }
+        default:{
+            return 0;
         }
     }
+
+    
+    if(eps < 0){
+        printf("eps must be a positive number\n");
+        return 0;
+    }
+
     double summ_a = 0, summ_b = 0, summ_c = 0, summ_d = 0;
     double sl;
     int n;

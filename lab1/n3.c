@@ -2,20 +2,35 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "../args_check.c"
 
-int float_args_check(char **argv, float *eps, float *a, float *b, float *c){
-    *eps = strtof(argv[2], NULL);
-    *a = strtof(argv[3], NULL);
-    *b = strtof(argv[4], NULL);
-    *c = strtof(argv[5], NULL);
-    if(fabs(*eps) == HUGE_VALF || fabs(*a) == HUGE_VALF || fabs(*b) == HUGE_VALF || fabs(*c) == HUGE_VALF){
-        return 0;
+check_results float_args_check(char **argv, float *eps, float *a, float *b, float *c){
+    check_results r;
+    switch(r = mystrtof(argv[2],eps)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
     }
-    if(*eps < 0){
-        *eps = fabs(*eps);
-        return 2;
+    switch(r = mystrtof(argv[3],a)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
     }
-    return 1;
+    switch(r = mystrtof(argv[4],b)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
+    }
+    switch(r = mystrtof(argv[5],c)){
+        case SUCCESS:{break;}
+        default:{
+            return r;
+        }
+    }
+    return SUCCESS;
 }
 
 int opts(char **argv, char *f){
@@ -118,56 +133,92 @@ int main(int argc, char **argv){
             if(argc == 6){
                 float eps, a, b, c;
                 switch(float_args_check(argv, &eps, &a, &b, &c)){
-                    case 0:{
+                    case FLOAT_OVERFLOW:{
                         printf("float overflow\n");
                         return 0;
                     }
-                    case 2:
-                        printf("eps must be a positive number\nprogramm will continue with absolute value of eps\n");
-                    case 1:{
-                        int e1, e2, e3;
-                        e1 = (fabs(a - b) <= eps);
-                        e2 = (fabs(a - c) <= eps);
-                        e3 = (fabs(c - b) <= eps);
-                        float x[12];
-                        if(e1 && e2){
-                            func_q(eps, a, a, a, &x[0], &x[1]);
-                        }else if(e1){
-                            func_q(eps, a, a, c, &x[0], &x[1]);
-                            func_q(eps, a, c, a, &x[2], &x[3]);
-                            func_q(eps, c, a, a, &x[4], &x[5]);
-                        }else if(e2){
-                            func_q(eps, a, a, b, &x[0], &x[1]);
-                            func_q(eps, a, b, a, &x[2], &x[3]);
-                            func_q(eps, b, a, a, &x[4], &x[5]);
-                        }else if(e3){
-                            func_q(eps, b, b, a, &x[0], &x[1]);
-                            func_q(eps, b, a, b, &x[2], &x[3]);
-                            func_q(eps, a, b, b, &x[4], &x[5]);
-                        }else{
-                            func_q(eps, a, b, c, &x[0], &x[1]);
-                            func_q(eps, a, c, b, &x[2], &x[3]);
-                            func_q(eps, b, a, c, &x[4], &x[5]);
-                            func_q(eps, b, c, a, &x[6], &x[7]);
-                            func_q(eps, c, a, b, &x[8], &x[9]);
-                            func_q(eps, c, b, a, &x[10], &x[11]);
-                        }
+                    case WRONG_FORMAT:{
+                        printf("wrong format\n");
+                        return 0;
+                    }
+                    case SUCCESS:{
                         break;
+                    }
+                    default:{
+                        return 0;
                     }
                 }
             }else{
                 printf("wrong arguments amount for this key\n");
+            }
+            if(eps < 0){
+                printf("eps must be a positive number\n");
+            }
+            int e1, e2, e3;
+            e1 = (fabs(a - b) <= eps);
+            e2 = (fabs(a - c) <= eps);
+            e3 = (fabs(c - b) <= eps);
+            float x[12];
+            if(e1 && e2){
+                func_q(eps, a, a, a, &x[0], &x[1]);
+            }else if(e1){
+                func_q(eps, a, a, c, &x[0], &x[1]);
+                func_q(eps, a, c, a, &x[2], &x[3]);
+                func_q(eps, c, a, a, &x[4], &x[5]);
+            }else if(e2){
+                func_q(eps, a, a, b, &x[0], &x[1]);
+                func_q(eps, a, b, a, &x[2], &x[3]);
+                func_q(eps, b, a, a, &x[4], &x[5]);
+            }else if(e3){
+                func_q(eps, b, b, a, &x[0], &x[1]);
+                func_q(eps, b, a, b, &x[2], &x[3]);
+                func_q(eps, a, b, b, &x[4], &x[5]);
+            }else{
+                func_q(eps, a, b, c, &x[0], &x[1]);
+                func_q(eps, a, c, b, &x[2], &x[3]);
+                func_q(eps, b, a, c, &x[4], &x[5]);
+                func_q(eps, b, c, a, &x[6], &x[7]);
+                func_q(eps, c, a, b, &x[8], &x[9]);
+                func_q(eps, c, b, a, &x[10], &x[11]);
             }
             break;
         }
         case 'm':{
             if(argc == 4){
                 long n1, n2;
-                n1 = strtol(argv[2], NULL, 10);
-                n2 = strtol(argv[3], NULL, 10);
-                if((n1 == LONG_MAX || n1 == LONG_MIN) || (n2 == LONG_MAX || n2 == LONG_MIN)){
-                    printf("long overflow\n");
-                }else if(n2 == 0){
+                switch(mystrtol(argv[2], &n1)){
+                    case INT_OVERFLOW:{
+                        printf("long overflow\n");
+                        return 0;
+                    }
+                    case WRONG_FORMAT:{
+                        printf("wrong format\n");
+                        return 0;
+                    }
+                    case SUCCESS:{
+                        break;
+                    }
+                    default:{
+                        return 0;
+                    }
+                }
+                switch(mystrtol(argv[3], &n2)){
+                    case INT_OVERFLOW:{
+                        printf("long overflow\n");
+                        return 0;
+                    }
+                    case WRONG_FORMAT:{
+                        printf("wrong format\n");
+                        return 0;
+                    }
+                    case SUCCESS:{
+                        break;
+                    }
+                    default:{
+                        return 0;
+                    }
+                }
+                if(n2 == 0){
                     printf("cant divide by zero\n");
                 }else{
                     if(func_m(n1, n2)){
@@ -185,19 +236,27 @@ int main(int argc, char **argv){
             if(argc == 6){
                 float eps, AB, BC, AC;
                 switch(float_args_check(argv, &eps, &AB, &BC, &AC)){
-                    case 0:{
+                    case FLOAT_OVERFLOW:{
                         printf("float overflow\n");
-                        break;
+                        return 0;
                     }
-                    case 2:
-                        printf("eps must be a positive number\nprogramm will continue with absolute value of eps\n");
-                    case 1:{
+                    case WRONG_FORMAT:{
+                        printf("wrong format\n");
+                        return 0;
+                    }
+                    case SUCCESS:{
+                        if(eps < 0){
+                            printf("eps must be a positive number\n");
+                        }
                         if(func_t(eps, AB, BC, AC)){
                             printf("there is right triangle with the sides: %.3f  %.3f  %.3f\n", AB, BC, AC);
                         }else{
                             printf("there is no right triangle with the sides: %.3f  %.3f  %.3f\n", AB, BC, AC);
                         }
                         break;
+                    }
+                    default:{
+                        return 0;
                     }
                 }
             }else{

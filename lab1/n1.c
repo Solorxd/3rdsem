@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include "../args_check.c"
 
 int argum(char **astr, char *mode, long *num){
     int fl1 = -2, fl2 = -1;
@@ -11,16 +12,20 @@ int argum(char **astr, char *mode, long *num){
         *mode = astr[2][1];
         fl1 = 0;
     }
-    long tmp = strtol(astr[1], NULL, 10);
-    if(tmp != LONG_MAX && tmp != LONG_MIN){
-        *num = tmp;
-        fl2 = 0;
+    switch(mystrtol(astr[1], num)){
+        case SUCCESS:{
+            fl2 = 0;
+            break;
+        }
+        default:{
+            break;
+        }
     }
     
     return fl1 + fl2;
 }
 
-int is_prime(unsigned long num){   
+int is_prime(unsigned long num){
     if (num == 2){
         return 1;
     }
