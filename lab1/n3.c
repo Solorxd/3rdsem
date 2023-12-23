@@ -130,8 +130,8 @@ int main(int argc, char **argv){
     }else{
     switch(fl){
         case 'q':{
+            float eps, a, b, c;
             if(argc == 6){
-                float eps, a, b, c;
                 switch(float_args_check(argv, &eps, &a, &b, &c)){
                     case FLOAT_OVERFLOW:{
                         printf("float overflow\n");
